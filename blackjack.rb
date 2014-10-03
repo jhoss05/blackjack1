@@ -13,14 +13,6 @@ def make_board(dealcards, player_name, mycards)
   puts "====================================="
 end
 
-def player_play(mycards, deck)
-  puts "Hit or Stay? (h/s)"
-  if gets.chomp == 'h'
-    mycards << deck.pop
-  elsif gets.chomp == 's'  
-  end
-end
-
 def computer_play(dealcards, deck)
   if calculate_total(dealcards) < 17
     dealcards << deck.pop
@@ -40,7 +32,7 @@ def calculate_total(deck)
     end 
   end
   # Correct for Aces
-  arr.select{|e| e == "A"}.count.times do 
+  arr.select{|e| e == "Ace"}.count.times do 
     if total > 21
       total -= 10
     end
@@ -54,110 +46,113 @@ def say_cards(deck)
   end
 end
 
-
-
 suits = ['Hearts', 'Diamonds', 'Spades', 'Clubs']
 cards = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'Jack', 'Queen', 'King', 'Ace']
 
-deck = suits.product(cards)
-deck.shuffle!
+# Welcome
 
-mycards = []
-dealcards = []
-
-
-# Main 
 puts "Welcome to Blackjack!"
 puts "Enter your name:"
 player_name = gets.chomp
 
-loop do 
-  # Dealer deals cards
-  deck.shuffle!
-  mycards << deck.pop
-  dealcards << deck.pop
-  mycards << deck.pop
-  dealcards << deck.pop
+# Deal Cards
 
-  # Play
-  loop do 
-    
-    # Make the board
-    make_board(dealcards, player_name, mycards)
-    if calculate_total(mycards) > 21
-      make_board(dealcards, player_name, mycards)
-      puts "Bust!"
-      puts "Dealer wins!"
-      break
-    elsif calculate_total(dealcards) > 21
-      make_board(dealcards, player_name, mycards)
-      puts "Dealer Busts!"
-      puts "#{player_name} wins!"
-      break
-    elsif calculate_total(mycards) == 21
-      make_board(dealcards, player_name, mycards)
-      puts "#{player_name} wins!"
-      break
-    elsif calculate_total(dealcards) == 21
-      make_board(dealcards, player_name, mycards)
-      puts "Dealer wins!"
-      break
-    end
+deck = suits.product(cards)
+deck.shuffle!
+mycards = []
+dealcards = []
 
-    # Player plays 
-    player_play(mycards, deck)
-    if calculate_total(mycards) > 21
-      make_board(dealcards, player_name, mycards)
-      puts "Bust!"
-      puts "Dealer wins!"
-      break
-    elsif calculate_total(dealcards) > 21
-      make_board(dealcards, player_name, mycards)
-      puts "Dealer Busts!"
-      puts "#{player_name} wins!"
-      break
-    elsif calculate_total(mycards) == 21
-      make_board(dealcards, player_name, mycards)
-      puts "#{player_name} wins!"
-      break
-    elsif calculate_total(dealcards) == 21
-      make_board(dealcards, player_name, mycards)
-      puts "Dealer wins!"
-      break
-    end
+mycards << deck.pop
+dealcards << deck.pop
+mycards << deck.pop
+dealcards << deck.pop
 
-    # Computer plays
-    computer_play(dealcards, deck)
-    if calculate_total(mycards) > 21
-      make_board(dealcards, player_name, mycards) 
-      puts "Bust!"
-      puts "Dealer wins!"
-      break
-    elsif calculate_total(dealcards) > 21
-      make_board(dealcards, player_name, mycards)
-      puts "Dealer Busts!"
-      puts "#{player_name} wins!"
-      break
-    elsif calculate_total(mycards) == 21
-      make_board(dealcards, player_name, mycards)
-      puts "#{player_name} wins!"
-      break
-    elsif calculate_total(dealcards) == 21
-      make_board(dealcards, player_name, mycards)
-      puts "Dealer wins!"
-      break
-    end
-  end
-  puts "Play again? (y/n)"
-  if gets.chomp == "y"
-    mycards.clear
-    dealcards.clear
+# Show Cards
+
+make_board(dealcards, player_name, mycards)
+
+# Winner from beginning? 
+
+if calculate_total(mycards) == 21
+  puts "Congratulations, you hit blackjack! You win!"
+end
+
+if calculate_total(dealcards) == 21
+  puts "Sorry, dealer hit blackjack. You lose."
+  exit
+end
+
+# Player plays
+
+while calculate_total(mycards) < 21
+  make_board(dealcards, player_name, mycards)
+  puts "What would you like to do? Hit or stay? (h/s)"
+  hit_or_stay = gets.chomp
+  
+  if !['h', 's'].include?(hit_or_stay)
     next
-  elsif gets.chomp == "n"
-    puts "Play again soon!"
+  end
+
+  if hit_or_stay == "s"
+    puts "You chose to stay."
     break
   end
+
+  if hit_or_stay == "h"
+    new_card = deck.pop
+    mycards << new_card
+    make_board(dealcards, player_name, mycards)
+  end
+  
+  if calculate_total(mycards) == 21
+    puts "Congratulations, you hit blackjack! You win!"
+    exit
+  elsif calculate_total(mycards) > 21
+    puts "Sorry, it looks like you busted! You lose."
+    exit
+  end
+end 
+
+# Dealer Plays
+
+while calculate_total(dealcards) < 17
+  new_card = deck.pop
+  dealcards << new_card
+  make_board(dealcards, player_name, mycards)
+  if calculate_total(dealcards) == 21
+    puts "Sorry, dealer hit blackjack. You lose."
+    exit
+  elsif calculate_total(dealcards) > 21
+    puts "Congratulations, dealer busted! You win!"
+    exit
+  end 
 end
+
+# Compare hands
+
+make_board(dealcards, player_name, mycards)
+if calculate_total(dealcards) > calculate_total(mycards)
+  puts "Sorry, dealer wins."
+  exit
+elsif calculate_total(dealcards) < calculate_total(mycards)
+  puts "Congrautulations! You win!"
+  exit
+else
+  puts "It's a tie!"
+  exit
+end
+
+# Play again?
+
+# puts "Play again? (y/n)"
+# play_again = gets.chomp
+# if play_again == "y"
+#   next
+# elsif play_again == "n"
+#   puts "See you soon!"
+#   exit
+# end
+    
 
 
 
